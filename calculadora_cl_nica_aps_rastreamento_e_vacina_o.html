@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Clínica APS | Rastreamento e Vacinação (MS vs. USPSTF)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        ms: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        uspstf: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Custom scrollbar for clean medical UI */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .tab-active {
+            border-bottom: 3px solid #0f172a;
+            color: #0f172a;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-emerald-600 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-500 p-2 rounded-lg text-slate-950 font-extrabold flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight leading-tight">APS Decisão Clínica: Rastreamento e Vacinação</h1>
+                    <p class="text-xs text-slate-300">Ministério da Saúde (SUS / PNI / CRIE 2025-2026) vs. US Preventive Services Task Force (USPSTF)</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="toggleTheoryModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <span>Resumo Teórico e Graus USPSTF</span>
+                </button>
+                <button onclick="copySummaryToClipboard()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                    </svg>
+                    <span>Copiar para Prontuário (e-SUS)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Presets Bar -->
+        <div class="bg-slate-800/90 border-t border-slate-700/80 px-4 py-2">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center gap-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1">Casos Rápidos:</span>
+                <button onclick="applyPreset('homem58')" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1 rounded-md transition border border-slate-600">
+                    Homem, 58a, Tabagista (25 anos-maço), Sobrepeso
+                </button>
+                <button onclick="applyPreset('mulher43')" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1 rounded-md transition border border-slate-600">
+                    Mulher, 43a, Eutrófica, Hígida
+                </button>
+                <button onclick="applyPreset('gestante28')" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1 rounded-md transition border border-slate-600">
+                    Gestante, 28a, IG 33 semanas
+                </button>
+                <button onclick="applyPreset('idoso68')" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1 rounded-md transition border border-slate-600">
+                    Idoso, 68a, Ex-tabagista, Diabético
+                </button>
+                <button onclick="resetForm()" class="text-xs bg-rose-900/60 hover:bg-rose-800 text-rose-200 px-2.5 py-1 rounded-md transition border border-rose-700/50 ml-auto">
+                    Limpar / Padrão
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- LEFT SIDEBAR: PATIENT INPUT PANEL (4 cols on desktop) -->
+            <aside class="lg:col-span-4 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
+                    <h2 class="font-bold text-sm uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Dados Clínicos do Paciente
+                    </h2>
+                    <span class="text-xs bg-slate-800 text-emerald-400 px-2 py-0.5 rounded font-medium">Tempo real</span>
+                </div>
+
+                <div class="p-4 space-y-5 divide-y divide-slate-100">
+                    
+                    <!-- 1. Demografia Básica -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label for="ageInput" class="text-sm font-semibold text-slate-700">Idade (anos)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="ageInput" min="0" max="105" value="52" oninput="syncAge(this.value)" class="w-20 text-center font-bold text-slate-900 border border-slate-300 rounded-lg py-1 px-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <span class="text-xs text-slate-500">anos</span>
+                            </div>
+                        </div>
+                        <input type="range" id="ageSlider" min="0" max="100" value="52" oninput="syncAge(this.value)" class="w-full accent-emerald-600 cursor-pointer">
+                        
+                        <div class="pt-1">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500 block mb-1.5">Sexo Biológico</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" id="btnSexF" onclick="setSex('F')" class="py-2 px-3 rounded-lg text-sm font-semibold border transition flex items-center justify-center gap-1.5 bg-emerald-50 border-emerald-600 text-emerald-900">
+                                    <span>Feminino</span>
+                                </button>
+                                <button type="button" id="btnSexM" onclick="setSex('M')" class="py-2 px-3 rounded-lg text-sm font-semibold border transition flex items-center justify-center gap-1.5 bg-white border-slate-200 text-slate-600 hover:bg-slate-50">
+                                    <span>Masculino</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Gestação / Puerpério (Condicional para Feminino) -->
+                        <div id="pregnancyContainer" class="pt-2 space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Ciclo Gravídico-Puerperal</label>
+                            <select id="pregnancyStatus" onchange="handlePregnancyChange()" class="w-full text-sm border border-slate-300 rounded-lg p-2 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                <option value="none">Não gestante / Não puérpera</option>
+                                <option value="pregnant">Gestante atual</option>
+                                <option value="postpartum">Puérpera (até 45 dias pós-parto)</option>
+                                <option value="planning">Planejando engravidar / Idade fértil</option>
+                                <option value="breastfeeding_u6m">Nutriz amamentando bebê menor que 6 meses</option>
+                            </select>
+
+                            <div id="gestationalDetails" class="hidden bg-pink-50/80 border border-pink-200 rounded-lg p-3 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <label for="gestationalWeeks" class="text-xs font-semibold text-pink-950">Idade Gestacional (semanas):</label>
+                                    <input type="number" id="gestationalWeeks" min="1" max="42" value="28" oninput="updateCalculation()" class="w-16 text-center font-bold text-sm border border-pink-300 rounded-md py-1 px-1.5 bg-white">
+                                </div>
+                                <label class="flex items-start gap-2 text-xs text-pink-950 cursor-pointer">
+                                    <input type="checkbox" id="chkPreeclampsiaRisk" onchange="updateCalculation()" class="mt-0.5 rounded text-pink-600 focus:ring-pink-500">
+                                    <span>Alto risco para pré-eclâmpsia (HAS crônica, DM, gestação múltipla, pré-eclâmpsia prévia)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Antropometria e IMC -->
+                    <div class="pt-4 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Antropometria / IMC</label>
+                            <button type="button" onclick="toggleBmiCalc()" class="text-xs text-emerald-700 hover:underline font-medium">Calcular por Peso/Altura</button>
+                        </div>
+
+                        <div id="bmiCalcBox" class="hidden bg-slate-50 p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs text-slate-500 block">Peso (kg)</label>
+                                <input type="number" id="weightInput" placeholder="78" oninput="computeBmiFromInputs()" class="w-full text-sm border border-slate-300 rounded p-1.5">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-500 block">Altura (cm)</label>
+                                <input type="number" id="heightInput" placeholder="165" oninput="computeBmiFromInputs()" class="w-full text-sm border border-slate-300 rounded p-1.5">
+                            </div>
+                            <div id="bmiComputedLabel" class="col-span-2 text-xs font-semibold text-emerald-800"></div>
+                        </div>
+
+                        <select id="bmiCategory" onchange="updateCalculation()" class="w-full text-sm border border-slate-300 rounded-lg p-2 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="normal">Eutrófico (IMC entre 18,5 e 24,9 kg/m²)</option>
+                            <option value="overweight">Sobrepeso (IMC entre 25,0 e 29,9 kg/m²)</option>
+                            <option value="obese">Obesidade (IMC maior ou igual a 30,0 kg/m²)</option>
+                            <option value="underweight">Baixo peso (IMC menor que 18,5 kg/m²)</option>
+                        </select>
+                    </div>
+
+                    <!-- 3. Tabagismo -->
+                    <div class="pt-4 space-y-2.5">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Tabagismo</label>
+                        <select id="smokingStatus" onchange="handleSmokingChange()" class="w-full text-sm border border-slate-300 rounded-lg p-2 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="never">Nunca fumou</option>
+                            <option value="current">Tabagista atual</option>
+                            <option value="former">Ex-tabagista</option>
+                        </select>
+
+                        <div id="smokingDetails" class="hidden bg-amber-50/70 border border-amber-200 rounded-lg p-3 space-y-2">
+                            <label class="flex items-start gap-2 text-xs text-amber-950 cursor-pointer">
+                                <input type="checkbox" id="chkPackYears20" onchange="updateCalculation()" class="mt-0.5 rounded text-amber-600">
+                                <span>Carga tabágica maior ou igual a 20 anos-maço</span>
+                            </label>
+                            <div id="quitTimeContainer" class="hidden">
+                                <label class="flex items-start gap-2 text-xs text-amber-950 cursor-pointer">
+                                    <input type="checkbox" id="chkQuitWithin15" checked onchange="updateCalculation()" class="mt-0.5 rounded text-amber-600">
+                                    <span>Parou de fumar há menos de 15 anos</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Vida Sexual e Comportamento -->
+                    <div class="pt-4 space-y-2">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Saúde Sexual</label>
+                        <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                            <input type="checkbox" id="chkSexuallyActive" checked onchange="updateCalculation()" class="rounded text-emerald-600 focus:ring-emerald-500">
+                            <span>Já iniciou atividade sexual</span>
+                        </label>
+                        <label class="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
+                            <input type="checkbox" id="chkStiHighRisk" onchange="updateCalculation()" class="mt-1 rounded text-emerald-600 focus:ring-emerald-500">
+                            <span class="text-xs sm:text-sm">Comportamento ou exposição de risco aumentado para IST / HIV (múltiplas parcerias, HSH, parceiro PVHIV, profissional do sexo, drogas injetáveis)</span>
+                        </label>
+                    </div>
+
+                    <!-- 5. Comorbidades e Fatores de Risco Clínicos -->
+                    <div class="pt-4 space-y-2.5">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Comorbidades e Fatores Clínicos</label>
+                        
+                        <div class="space-y-2 text-xs sm:text-sm">
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkHas" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Hipertensão Arterial Sistêmica (ou fatores que elevam PA)</span>
+                            </label>
+
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkPrediabetes" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Pré-diabetes (Glicemia de jejum entre 101 e 125 mg/dL)</span>
+                            </label>
+
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkDiabetes" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Diabetes Mellitus diagnosticado</span>
+                            </label>
+
+                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                <label class="text-xs font-semibold text-slate-600 block mb-1">Fatores de risco adicionais para DM2 (sedentarismo, SOP, acantose, esteatose, HF de DM, DMG prévio, HDL menor que 35, TG maior que 250):</label>
+                                <select id="dmRiskFactorsCount" onchange="updateCalculation()" class="w-full text-xs border border-slate-300 rounded p-1.5 bg-white">
+                                    <option value="0">Nenhum fator adicional</option>
+                                    <option value="1">1 a 2 fatores de risco para DM2</option>
+                                    <option value="3">3 ou mais fatores de risco para DM2</option>
+                                </select>
+                            </div>
+
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkHighCvRisk" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Alto Risco Cardiovascular / Dislipidemia / Risco CV em 10 anos maior ou igual a 10%</span>
+                            </label>
+
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkImmunosuppressed" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Imunossupressão / PVHIV / Neoplasia ativa / Corticoterapia ou Quimioterapia / Transplante</span>
+                            </label>
+
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkLiverKidney" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Hepatopatia crônica, Hepatite C ou Doença Renal Crônica / Hemodiálise</span>
+                            </label>
+
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkLungHeartChronic" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Pneumopatia crônica (DPOC, asma moderada/grave) ou Cardiopatia crônica</span>
+                            </label>
+
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkOsteoporosisRisk" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Fatores de risco para Osteoporose (fratura prévia, corticoide crônico, pós-menopausa de risco)</span>
+                            </label>
+
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkBrcaHistory" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>História familiar de Câncer de Mama, Ovário, Tubário ou Peritoneal (suspeita BRCA1/2)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 6. Perfil Social e Ocupacional -->
+                    <div class="pt-4 space-y-2">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Contexto Ocupacional e Social</label>
+                        <div class="space-y-2 text-xs sm:text-sm">
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkHealthWorker" onchange="handleHealthWorkerChange()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Profissional ou trabalhador da saúde</span>
+                            </label>
+                            <div id="healthWorkerSub" class="hidden pl-5">
+                                <label class="flex items-start gap-2 text-xs text-emerald-900 bg-emerald-50 p-2 rounded border border-emerald-200 cursor-pointer">
+                                    <input type="checkbox" id="chkNeonatalContact" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                    <span>Atua em maternidade / UTI neonatal ou tem contato próximo com lactente</span>
+                                </label>
+                            </div>
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkBedriddenIlpi" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>Acamado ou residente em Instituição de Longa Permanência (ILPI)</span>
+                            </label>
+                            <label class="flex items-start gap-2 text-slate-700 cursor-pointer">
+                                <input type="checkbox" id="chkIndigenous" onchange="updateCalculation()" class="mt-0.5 rounded text-emerald-600">
+                                <span>População Indígena</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 7. Histórico Vacinal Prévio -->
+                    <div class="pt-4 space-y-3">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Situação Vacinal Prévia</label>
+                        
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 block mb-1">Hepatite B</label>
+                            <select id="vacHepB" onchange="updateCalculation()" class="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white">
+                                <option value="none">Não vacinado ou desconhecido</option>
+                                <option value="incomplete">Incompleto (1 ou 2 doses prévias)</option>
+                                <option value="complete">Esquema completo (3 doses prévias)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 block mb-1">Dupla Adulto (dT - Difteria e Tétano)</label>
+                            <select id="vacDt" onchange="updateCalculation()" class="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white">
+                                <option value="complete_recent">Completo (3 doses, último reforço há menos de 10 anos)</option>
+                                <option value="complete_due">Completo (3 doses, último reforço há 10 anos ou mais)</option>
+                                <option value="incomplete">Incompleto (menos de 3 doses)</option>
+                                <option value="none">Não vacinado ou desconhecido</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 block mb-1">Febre Amarela</label>
+                            <select id="vacFa" onchange="updateCalculation()" class="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white">
+                                <option value="none">Não vacinado ou desconhecido</option>
+                                <option value="after5">1 dose recebida após os 5 anos de idade</option>
+                                <option value="before5">1 dose recebida antes dos 5 anos de idade</option>
+                                <option value="fractional">Recebeu dose fracionada há 10 anos ou mais</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-slate-600 block mb-1">Tríplice Viral (SCR - Sarampo, Caxumba e Rubéola)</label>
+                            <select id="vacScr" onchange="updateCalculation()" class="w-full text-xs border border-slate-300 rounded-lg p-2 bg-white">
+                                <option value="none">Não vacinado ou desconhecido</option>
+                                <option value="1dose">1 dose comprovada</option>
+                                <option value="2doses">2 doses comprovadas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+            <!-- RIGHT PANEL: RESULTS AND CLINICAL RECOMMENDATIONS (8 cols on desktop) -->
+            <section class="lg:col-span-8 space-y-5">
+
+                <!-- Patient Summary Banner -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div id="avatarBadge" class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 font-extrabold text-lg flex items-center justify-center border border-emerald-300">
+                                52a
+                            </div>
+                            <div>
+                                <h2 id="patientSummaryTitle" class="text-base sm:text-lg font-bold text-slate-900">Mulher, 52 anos, Eutrófica</h2>
+                                <p id="patientSummaryTags" class="text-xs text-slate-500 mt-0.5">Vida sexual ativa • Sem tabagismo • Sem comorbidades selecionadas</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+                                MS / SUS: <span id="countMs">0</span> condutas
+                            </span>
+                            <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-semibold">
+                                USPSTF: <span id="countUspstf">0</span> condutas
+                            </span>
+                            <span class="px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 font-semibold">
+                                Vacinas: <span id="countVac">0</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 px-3 pt-2 flex flex-wrap items-center justify-between border-b">
+                    <div class="flex space-x-1 sm:space-x-4 overflow-x-auto">
+                        <button onclick="switchTab('all')" id="tab_all" class="tab-active py-2.5 px-3 text-xs sm:text-sm whitespace-nowrap transition">
+                            Visão Completa Comparativa
+                        </button>
+                        <button onclick="switchTab('ms')" id="tab_ms" class="py-2.5 px-3 text-xs sm:text-sm text-slate-600 hover:text-slate-900 whitespace-nowrap transition flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                            Ministério da Saúde (SUS)
+                        </button>
+                        <button onclick="switchTab('uspstf')" id="tab_uspstf" class="py-2.5 px-3 text-xs sm:text-sm text-slate-600 hover:text-slate-900 whitespace-nowrap transition flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                            Task Force (USPSTF)
+                        </button>
+                        <button onclick="switchTab('quaternary')" id="tab_quaternary" class="py-2.5 px-3 text-xs sm:text-sm text-slate-600 hover:text-slate-900 whitespace-nowrap transition flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                            Prevenção Quaternária / Próstata
+                        </button>
+                        <button onclick="switchTab('vaccines')" id="tab_vaccines" class="py-2.5 px-3 text-xs sm:text-sm text-slate-600 hover:text-slate-900 whitespace-nowrap transition flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+                            Calendário Vacinal (PNI / CRIE)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Key Divergences Alert Box -->
+                <div id="divergenceAlertBox" class="hidden bg-indigo-950 text-white rounded-xl p-4 shadow-sm border border-indigo-800">
+                    <div class="flex items-start gap-3">
+                        <div class="bg-indigo-800 p-2 rounded-lg text-indigo-200 shrink-0 mt-0.5">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                            </svg>
+                        </div>
+                        <div class="space-y-1">
+                            <h3 class="text-sm font-bold text-indigo-100 uppercase tracking-wide">Divergências Diretas entre Ministério da Saúde e USPSTF para este paciente</h3>
+                            <ul id="divergenceList" class="text-xs sm:text-sm text-indigo-200 space-y-1 list-disc list-inside"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION A & B: SIDE BY SIDE OR STACKED SCREENING -->
+                <div id="screeningComparisonGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    
+                    <!-- COLUMN A: MINISTÉRIO DA SAÚDE -->
+                    <div id="sectionMs" class="space-y-3">
+                        <div class="bg-emerald-800 text-white px-4 py-3 rounded-xl shadow-sm flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-sm sm:text-base">Rastreamento: Ministério da Saúde</h3>
+                                <p class="text-xs text-emerald-100">Diretrizes SUS / Cadernos APS / INCA / CONITEC</p>
+                            </div>
+                            <span class="bg-emerald-900/80 text-emerald-200 text-xs font-bold px-2.5 py-1 rounded-md border border-emerald-700">Brasil</span>
+                        </div>
+                        <div id="msCardsContainer" class="space-y-3"></div>
+                    </div>
+
+                    <!-- COLUMN B: USPSTF -->
+                    <div id="sectionUspstf" class="space-y-3">
+                        <div class="bg-blue-800 text-white px-4 py-3 rounded-xl shadow-sm flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-sm sm:text-base">Rastreamento: Task Force (USPSTF)</h3>
+                                <p class="text-xs text-blue-100">Recomendações Graus A e B (Evidência Forte/Moderada)</p>
+                            </div>
+                            <span class="bg-blue-900/80 text-blue-200 text-xs font-bold px-2.5 py-1 rounded-md border border-blue-700">EUA / Global</span>
+                        </div>
+                        <div id="uspstfCardsContainer" class="space-y-3"></div>
+                    </div>
+
+                </div>
+
+                <!-- SECTION C: QUATERNARY PREVENTION & SHARED DECISION MAKING -->
+                <div id="sectionQuaternary" class="space-y-3 pt-2">
+                    <div class="bg-amber-700 text-white px-4 py-3 rounded-xl shadow-sm flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-sm sm:text-base">Prevenção Quaternária e Decisão Compartilhada</h3>
+                            <p class="text-xs text-amber-100">Prevenção de iatrogenia, sobrediagnóstico (overdiagnosis) e sobretratamento (overtreatment)</p>
+                        </div>
+                        <span class="bg-amber-900/60 text-amber-100 text-xs font-bold px-2.5 py-1 rounded-md">Primum Non Nocere</span>
+                    </div>
+                    <div id="quaternaryCardsContainer" class="space-y-3"></div>
+                </div>
+
+                <!-- SECTION D: VACCINATION SCHEDULE (PNI & CRIE) -->
+                <div id="sectionVaccines" class="space-y-3 pt-2">
+                    <div class="bg-teal-800 text-white px-4 py-3 rounded-xl shadow-sm flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-sm sm:text-base">Calendário Nacional de Vacinação (PNI / MS e CRIE)</h3>
+                            <p class="text-xs text-teal-100">Prevenção Primária (Proteção Específica) com atualizações Pneumo 20, Covid-19 e VSR</p>
+                        </div>
+                        <span class="bg-teal-950/60 text-teal-200 text-xs font-bold px-2.5 py-1 rounded-md">Imunizações</span>
+                    </div>
+                    <div id="vaccineCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Notification Toast for Clipboard -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center gap-3 max-w-md">
+        <div class="bg-emerald-500 text-slate-950 rounded-full p-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="text-sm font-bold">Resumo copiado com sucesso!</p>
+            <p class="text-xs text-slate-300">Pronto para colar no prontuário eletrônico (PEC e-SUS).</p>
+        </div>
+    </div>
+
+    <!-- MODAL: RESUMO TEÓRICO (LEAVELL & CLARK, JAMOULLE, USPSTF GRADES) -->
+    <div id="theoryModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
+            <div class="sticky top-0 bg-slate-900 text-white px-6 py-4 flex items-center justify-between z-10">
+                <div>
+                    <h2 class="text-lg font-bold">Referencial Teórico: Graus USPSTF, Níveis de Prevenção e Critérios de Rastreio</h2>
+                    <p class="text-xs text-slate-300">Consulta rápida para discussão clínica e provas de Medicina Preventiva</p>
+                </div>
+                <button onclick="toggleTheoryModal()" class="text-slate-300 hover:text-white bg-slate-800 px-3 py-1.5 rounded-lg text-sm font-semibold">
+                    Fechar
+                </button>
+            </div>
+
+            <div class="p-6 space-y-6 text-sm">
+                <!-- Graus de Recomendação USPSTF -->
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base mb-2">1. Graus de Recomendação da US Preventive Services Task Force (USPSTF)</h3>
+                    <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                                    <th class="p-3 font-bold w-20">Grau</th>
+                                    <th class="p-3 font-bold">Definição da Evidência</th>
+                                    <th class="p-3 font-bold">Conduta na Prática Clínica</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <tr>
+                                    <td class="p-3 font-extrabold text-emerald-700 bg-emerald-50 text-center">Grau A</td>
+                                    <td class="p-3">Alta certeza de que o benefício líquido é substancial.</td>
+                                    <td class="p-3 font-semibold text-emerald-800">Oferecer ou prover este serviço a todos os elegíveis.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-extrabold text-blue-700 bg-blue-50 text-center">Grau B</td>
+                                    <td class="p-3">Alta certeza de que o benefício líquido é moderado, ou moderada certeza de que o benefício é moderado a substancial.</td>
+                                    <td class="p-3 font-semibold text-blue-800">Oferecer ou prover este serviço.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-extrabold text-amber-700 bg-amber-50 text-center">Grau C</td>
+                                    <td class="p-3">Recomenda contra a oferta rotineira. Certeza moderada ou alta de que o benefício líquido é pequeno.</td>
+                                    <td class="p-3 font-semibold text-amber-800">Oferecer seletivamente de forma individualizada (decisão compartilhada conforme valores do paciente).</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-extrabold text-rose-700 bg-rose-50 text-center">Grau D</td>
+                                    <td class="p-3">Moderada ou alta certeza de que o serviço não traz benefício ou que os danos superam os benefícios.</td>
+                                    <td class="p-3 font-semibold text-rose-800">Desencorajar e não realizar o rastreamento.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-extrabold text-slate-700 bg-slate-100 text-center">Grau I</td>
+                                    <td class="p-3">Evidência atual é insuficiente, faltante, de baixa qualidade ou conflituosa para avaliar balanço entre riscos e benefícios.</td>
+                                    <td class="p-3 text-slate-700">Se oferecido, esclarecer ao paciente as incertezas científicas sobre danos e benefícios.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Níveis de Prevenção -->
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base mb-2">2. Níveis de Prevenção (Leavell e Clark, Marc Jamoulle e José Agostinho Santos)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm">
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                            <span class="font-bold text-emerald-800 block">Prevenção Primordial e Primária (Período Pré-Patogênico)</span>
+                            <p class="text-slate-600 mt-1">Objetivo de reduzir a incidência antes da doença existir. Inclui <strong>Promoção da Saúde</strong> (moradia, alimentação, lazer), <strong>Prevenção Primordial</strong> (políticas globais contra estilo de vida de risco) e <strong>Proteção Específica</strong> (imunizações, preservativos, ácido fólico).</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                            <span class="font-bold text-blue-800 block">Prevenção Secundária (Período Patogênico Inicial)</span>
+                            <p class="text-slate-600 mt-1">A doença já existe a nível celular ou laboratorial. Inclui <strong>Diagnóstico Precoce e Tratamento Imediato</strong> (rastreamento em assintomáticos ou down-staging em sintomáticos iniciais) e <strong>Limitação da Incapacidade</strong>.</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                            <span class="font-bold text-indigo-800 block">Prevenção Terciária (Convalescência / Sequelas)</span>
+                            <p class="text-slate-600 mt-1">Foco na <strong>Reabilitação</strong> física, psicológica e social para impedir a incapacidade total e reinserir o indivíduo em sua capacidade residual máxima (fisioterapia, próteses).</p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200">
+                            <span class="font-bold text-amber-900 block">Prevenção Quaternária (Marc Jamoulle, 1995) e Quinquenária (J. A. Santos, 2014)</span>
+                            <p class="text-amber-950 mt-1"><strong>Quaternária (P4):</strong> Paciente sente-se doente ou teme adoecer, mas não há doença; protege contra sobremedicalização, polifarmácia (4 ou mais medicamentos) e rastreios indevidos.<br><strong>Quinquenária (P5):</strong> Prevenção do dano ao paciente agindo contra o burnout e exaustão do profissional de saúde.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Critérios de Wilson e Jungner e Paradoxo de Rose -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs sm:text-sm">
+                    <h4 class="font-bold text-slate-900">3. Conceitos-Chave em Rastreamento Populacional</h4>
+                    <p><strong>Rastreamento vs. Diagnóstico Precoce:</strong> O rastreamento aplica-se exclusivamente a pessoas <em>assintomáticas</em>. Quando o paciente já apresenta sinais ou sintomas (como nódulo mamário palpável), o exame é de investigação para diagnóstico precoce.</p>
+                    <p><strong>Critérios de Wilson e Jungner (1969):</strong> O agravo deve ser um problema relevante de saúde pública (alta <em>magnitude</em>, <em>transcendência</em> e <em>vulnerabilidade</em>); história natural bem conhecida; estágio pré-clínico assintomático prolongado; benefício do tratamento precoce superior ao tratamento na fase clínica; exame disponível, aceitável e confiável; custo sustentável.</p>
+                    <p><strong>Paradoxo Preventivo de Geoffrey Rose (1988):</strong> A maior parte dos casos de uma doença ocorre na população de baixo ou médio risco (pois ela é muito mais numerosa) do que no pequeno grupo de alto risco. Por isso, medidas populacionais têm impacto coletivo maior.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentSex = 'F';
+        let activeTab = 'all';
+        let lastGeneratedSummaryText = '';
+
+        function syncAge(val) {
+            let parsed = parseInt(val, 10);
+            if (isNaN(parsed) || parsed < 0) parsed = 0;
+            if (parsed > 105) parsed = 105;
+            document.getElementById('ageInput').value = parsed;
+            document.getElementById('ageSlider').value = parsed > 100 ? 100 : parsed;
+            updateCalculation();
+        }
+
+        function setSex(sex) {
+            currentSex = sex;
+            const btnF = document.getElementById('btnSexF');
+            const btnM = document.getElementById('btnSexM');
+            const pregContainer = document.getElementById('pregnancyContainer');
+
+            if (sex === 'F') {
+                btnF.className = 'py-2 px-3 rounded-lg text-sm font-semibold border transition flex items-center justify-center gap-1.5 bg-emerald-50 border-emerald-600 text-emerald-900';
+                btnM.className = 'py-2 px-3 rounded-lg text-sm font-semibold border transition flex items-center justify-center gap-1.5 bg-white border-slate-200 text-slate-600 hover:bg-slate-50';
+                pregContainer.classList.remove('hidden');
+            } else {
+                btnM.className = 'py-2 px-3 rounded-lg text-sm font-semibold border transition flex items-center justify-center gap-1.5 bg-emerald-50 border-emerald-600 text-emerald-900';
+                btnF.className = 'py-2 px-3 rounded-lg text-sm font-semibold border transition flex items-center justify-center gap-1.5 bg-white border-slate-200 text-slate-600 hover:bg-slate-50';
+                pregContainer.classList.add('hidden');
+                document.getElementById('pregnancyStatus').value = 'none';
+                document.getElementById('gestationalDetails').classList.add('hidden');
+            }
+            updateCalculation();
+        }
+
+        function handlePregnancyChange() {
+            const status = document.getElementById('pregnancyStatus').value;
+            const details = document.getElementById('gestationalDetails');
+            if (status === 'pregnant') {
+                details.classList.remove('hidden');
+                document.getElementById('chkSexuallyActive').checked = true;
+            } else {
+                details.classList.add('hidden');
+            }
+            updateCalculation();
+        }
+
+        function handleSmokingChange() {
+            const status = document.getElementById('smokingStatus').value;
+            const details = document.getElementById('smokingDetails');
+            const quitContainer = document.getElementById('quitTimeContainer');
+
+            if (status === 'never') {
+                details.classList.add('hidden');
+                document.getElementById('chkPackYears20').checked = false;
+            } else {
+                details.classList.remove('hidden');
+                if (status === 'former') {
+                    quitContainer.classList.remove('hidden');
+                } else {
+                    quitContainer.classList.add('hidden');
+                }
+            }
+            updateCalculation();
+        }
+
+        function handleHealthWorkerChange() {
+            const isHw = document.getElementById('chkHealthWorker').checked;
+            const sub = document.getElementById('healthWorkerSub');
+            if (isHw) {
+                sub.classList.remove('hidden');
+            } else {
+                sub.classList.add('hidden');
+                document.getElementById('chkNeonatalContact').checked = false;
+            }
+            updateCalculation();
+        }
+
+        function toggleBmiCalc() {
+            const box = document.getElementById('bmiCalcBox');
+            box.classList.toggle('hidden');
+        }
+
+        function computeBmiFromInputs() {
+            const w = parseFloat(document.getElementById('weightInput').value);
+            const hCm = parseFloat(document.getElementById('heightInput').value);
+            const label = document.getElementById('bmiComputedLabel');
+            if (w > 0 && hCm > 30) {
+                const hM = hCm / 100;
+                const bmi = w / (hM * hM);
+                const bmiFixed = bmi.toFixed(1);
+                let cat = 'normal';
+                let catText = 'Eutrófico';
+                if (bmi < 18.5) {
+                    cat = 'underweight';
+                    catText = 'Baixo peso';
+                } else if (bmi >= 30) {
+                    cat = 'obese';
+                    catText = 'Obesidade';
+                } else if (bmi >= 25) {
+                    cat = 'overweight';
+                    catText = 'Sobrepeso';
+                }
+                document.getElementById('bmiCategory').value = cat;
+                label.textContent = `IMC calculado: ${bmiFixed} kg/m² (${catText})`;
+                updateCalculation();
+            } else {
+                label.textContent = '';
+            }
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            const tabs = ['all', 'ms', 'uspstf', 'quaternary', 'vaccines'];
+            tabs.forEach(t => {
+                const el = document.getElementById('tab_' + t);
+                if (t === tab) {
+                    el.classList.add('tab-active');
+                    el.classList.remove('text-slate-600');
+                } else {
+                    el.classList.remove('tab-active');
+                    el.classList.add('text-slate-600');
+                }
+            });
+
+            const grid = document.getElementById('screeningComparisonGrid');
+            const secMs = document.getElementById('sectionMs');
+            const secUspstf = document.getElementById('sectionUspstf');
+            const secQuat = document.getElementById('sectionQuaternary');
+            const secVac = document.getElementById('sectionVaccines');
+
+            if (tab === 'all') {
+                grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-5';
+                grid.classList.remove('hidden');
+                secMs.classList.remove('hidden');
+                secUspstf.classList.remove('hidden');
+                secQuat.classList.remove('hidden');
+                secVac.classList.remove('hidden');
+            } else if (tab === 'ms') {
+                grid.className = 'grid grid-cols-1 gap-5';
+                grid.classList.remove('hidden');
+                secMs.classList.remove('hidden');
+                secUspstf.classList.add('hidden');
+                secQuat.classList.add('hidden');
+                secVac.classList.add('hidden');
+            } else if (tab === 'uspstf') {
+                grid.className = 'grid grid-cols-1 gap-5';
+                grid.classList.remove('hidden');
+                secMs.classList.add('hidden');
+                secUspstf.classList.remove('hidden');
+                secQuat.classList.add('hidden');
+                secVac.classList.add('hidden');
+            } else if (tab === 'quaternary') {
+                grid.classList.add('hidden');
+                secQuat.classList.remove('hidden');
+                secVac.classList.add('hidden');
+            } else if (tab === 'vaccines') {
+                grid.classList.add('hidden');
+                secQuat.classList.add('hidden');
+                secVac.classList.remove('hidden');
+            }
+        }
+
+        function toggleTheoryModal() {
+            const modal = document.getElementById('theoryModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Helper to build a visual clinical card
+        function buildCard({ title, badgeText, badgeColor, exam, frequency, details, alertNote }) {
+            const colorMap = {
+                emerald: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+                blue: 'bg-blue-100 text-blue-900 border-blue-300',
+                amber: 'bg-amber-100 text-amber-900 border-amber-300',
+                rose: 'bg-rose-100 text-rose-900 border-rose-300',
+                teal: 'bg-teal-100 text-teal-900 border-teal-300',
+                slate: 'bg-slate-100 text-slate-800 border-slate-300'
+            };
+            const badgeClass = colorMap[badgeColor] || colorMap.slate;
+
+            return `
+                <div class="bg-white rounded-xl p-4 shadow-xs border border-slate-200 hover:border-slate-300 transition flex flex-col justify-between space-y-2.5">
+                    <div>
+                        <div class="flex items-start justify-between gap-2">
+                            <h4 class="font-bold text-slate-900 text-sm sm:text-base leading-snug">${title}</h4>
+                            <span class="text-xs font-bold px-2.5 py-0.5 rounded-md border shrink-0 ${badgeClass}">${badgeText}</span>
+                        </div>
+                        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                            <div><span class="font-semibold text-slate-500">Exame/Ação:</span> <span class="font-semibold text-slate-800">${exam}</span></div>
+                            <div><span class="font-semibold text-slate-500">Periodicidade:</span> <span class="font-semibold text-slate-800">${frequency}</span></div>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-600 mt-2.5 leading-relaxed">${details}</p>
+                    </div>
+                    ${alertNote ? `<div class="text-xs bg-amber-50/90 text-amber-950 border border-amber-200 px-3 py-2 rounded-lg font-medium">${alertNote}</div>` : ''}
+                </div>
+            `;
+        }
+
+        function updateCalculation() {
+            const age = parseInt(document.getElementById('ageInput').value, 10) || 0;
+            const sex = currentSex;
+            const pregStatus = sex === 'F' ? document.getElementById('pregnancyStatus').value : 'none';
+            const isPregnant = pregStatus === 'pregnant';
+            const isPostpartum = pregStatus === 'postpartum';
+            const isPlanningPreg = pregStatus === 'planning';
+            const isBreastfeedingU6m = pregStatus === 'breastfeeding_u6m';
+            const igWeeks = parseInt(document.getElementById('gestationalWeeks').value, 10) || 28;
+            const highPreeclampsiaRisk = document.getElementById('chkPreeclampsiaRisk').checked;
+
+            const bmiCat = document.getElementById('bmiCategory').value;
+            const isOverweightOrObese = (bmiCat === 'overweight' || bmiCat === 'obese');
+            const isObese = (bmiCat === 'obese');
+            const isUnderweight = (bmiCat === 'underweight');
+
+            const smoking = document.getElementById('smokingStatus').value;
+            const hasEverSmoked = (smoking === 'current' || smoking === 'former');
+            const packYears20 = document.getElementById('chkPackYears20').checked;
+            const quitWithin15 = smoking === 'current' ? true : document.getElementById('chkQuitWithin15').checked;
+
+            const sexuallyActive = document.getElementById('chkSexuallyActive').checked;
+            const stiHighRisk = document.getElementById('chkStiHighRisk').checked;
+
+            const hasHypertension = document.getElementById('chkHas').checked;
+            const hasPrediabetes = document.getElementById('chkPrediabetes').checked;
+            const hasDiabetes = document.getElementById('chkDiabetes').checked;
+            const dmRiskCount = parseInt(document.getElementById('dmRiskFactorsCount').value, 10) || 0;
+            const highCvRisk = document.getElementById('chkHighCvRisk').checked;
+            const isImmunosuppressed = document.getElementById('chkImmunosuppressed').checked;
+            const hasLiverKidney = document.getElementById('chkLiverKidney').checked;
+            const hasLungHeart = document.getElementById('chkLungHeartChronic').checked;
+            const hasOsteoporosisRisk = document.getElementById('chkOsteoporosisRisk').checked;
+            const hasBrcaHistory = document.getElementById('chkBrcaHistory').checked;
+
+            const isHealthWorker = document.getElementById('chkHealthWorker').checked;
+            const hasNeonatalContact = document.getElementById('chkNeonatalContact').checked;
+            const isBedriddenIlpi = document.getElementById('chkBedriddenIlpi').checked;
+            const isIndigenous = document.getElementById('chkIndigenous').checked;
+
+            const vacHepB = document.getElementById('vacHepB').value;
+            const vacDt = document.getElementById('vacDt').value;
+            const vacFa = document.getElementById('vacFa').value;
+            const vacScr = document.getElementById('vacScr').value;
+
+            const hasAnyChronicComorbidity = (hasHypertension || hasDiabetes || highCvRisk || isImmunosuppressed || hasLiverKidney || hasLungHeart || isObese);
+
+            // Update Patient Header Banner
+            document.getElementById('avatarBadge').textContent = `${age}a`;
+            const sexLabel = sex === 'F' ? 'Mulher' : 'Homem';
+            const bmiLabels = {
+                normal: 'Eutrófico(a)',
+                overweight: 'Sobrepeso (IMC maior ou igual a 25)',
+                obese: 'Obesidade (IMC maior ou igual a 30)',
+                underweight: 'Baixo peso'
+            };
+            let titleExtra = isPregnant ? ` • Gestante (${igWeeks} semanas)` : (isPostpartum ? ' • Puérpera' : '');
+            document.getElementById('patientSummaryTitle').textContent = `${sexLabel}, ${age} anos, ${bmiLabels[bmiCat]}${titleExtra}`;
+
+            let tags = [];
+            if (sexuallyActive) tags.push('Vida sexual ativa');
+            if (smoking === 'current') tags.push('Tabagista atual');
+            if (smoking === 'former') tags.push('Ex-tabagista');
+            if (hasHypertension) tags.push('HAS');
+            if (hasPrediabetes) tags.push('Pré-diabetes');
+            if (hasDiabetes) tags.push('Diabetes Mellitus');
+            if (highCvRisk) tags.push('Alto Risco CV');
+            if (isImmunosuppressed) tags.push('Imunossuprimido/PVHIV');
+            if (hasLiverKidney) tags.push('Hepatopata/DRC');
+            if (isHealthWorker) tags.push('Profissional de Saúde');
+            if (tags.length === 0) tags.push('Sem fatores de risco selecionados');
+            document.getElementById('patientSummaryTags').textContent = tags.join(' • ');
+
+            // Arrays for cards
+            const msCards = [];
+            const uspstfCards = [];
+            const quaternaryCards = [];
+            const vaccineCards = [];
+            const divergences = [];
+
+            // =========================================================================
+            // 1. HIPERTENSÃO ARTERIAL SISTÊMICA (HAS)
+            // =========================================================================
+            if (!hasHypertension) {
+                if (age >= 3) {
+                    const hasBpRisk = (isOverweightOrObese || hasLiverKidney || hasDiabetes);
+                    msCards.push({
+                        title: 'Hipertensão Arterial Sistêmica (HAS)',
+                        badgeText: 'Grau A (MS)',
+                        badgeColor: 'emerald',
+                        exam: 'Aferição da Pressão Arterial',
+                        frequency: hasBpRisk ? 'Em toda consulta clínica (devido a fatores de risco)' : 'Anual',
+                        details: 'Rastreamento indicado a partir dos 3 anos de idade. No adulto: se PA menor que 130 por 85 mmHg, orientar prevenção primária. Se PA maior ou igual a 130 por 85 e menor que 139 por 89 mmHg, buscar outros fatores de risco para doença cardiovascular.'
+                    });
+                } else {
+                    msCards.push({
+                        title: 'Hipertensão Arterial em Menores de 3 Anos',
+                        badgeText: 'Se Condição Associada',
+                        badgeColor: 'slate',
+                        exam: 'Aferição da Pressão Arterial',
+                        frequency: 'Nas consultas se condição clínica de risco',
+                        details: 'Antes dos 3 anos de idade, aferir PA apenas se houver condições clínicas associadas: prematuridade, muito baixo peso ao nascer, restrição de crescimento intrauterino, cardiopatia congênita, doença renal crônica, ITU de repetição ou malformações renais.'
+                    });
+                }
+
+                if (age >= 18) {
+                    const uspstfAnnualBp = (age >= 40 || isOverweightOrObese);
+                    uspstfCards.push({
+                        title: 'Hipertensão Arterial em Adultos',
+                        badgeText: 'Grau A (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: 'Aferição da PA no consultório + Confirmação externa (MAPA/MRPA)',
+                        frequency: uspstfAnnualBp ? 'Anual (idade maior ou igual a 40 anos ou risco aumentado)' : 'A cada 3 a 5 anos (18 a 39 anos sem fatores de risco)',
+                        details: 'A USPSTF recomenda rastrear adultos com 18 anos ou mais e exige obter medidas fora do consultório (MAPA ou MRPA) para confirmação diagnóstica antes de iniciar o tratamento.'
+                    });
+                }
+            }
+
+            // =========================================================================
+            // 2. DIABETES MELLITUS TIPO 2
+            // =========================================================================
+            if (!hasDiabetes) {
+                const totalDmFactors = dmRiskCount + (hasHypertension ? 1 : 0) + (highCvRisk ? 1 : 0) + (hasPrediabetes ? 1 : 0);
+                const msDmEligible = (age > 35) || (isOverweightOrObese && totalDmFactors >= 1) || isImmunosuppressed;
+
+                if (msDmEligible) {
+                    const isAnnualDm = (hasPrediabetes || totalDmFactors >= 3);
+                    msCards.push({
+                        title: 'Diabetes Mellitus Tipo 2',
+                        badgeText: 'Grau B (MS)',
+                        badgeColor: 'emerald',
+                        exam: 'Glicemia de jejum (8 a 12h), podendo incluir HbA1c',
+                        frequency: isAnnualDm ? 'ANUAL (devido a pré-diabetes ou 3 ou mais fatores de risco)' : 'A cada 3 anos',
+                        details: 'Indicado para adultos maiores de 35 anos, ou em qualquer idade se sobrepeso/obesidade (IMC maior ou igual a 25) com pelo menos 1 fator de risco, ou em PVHIV, fibrose cística e transplantados.'
+                    });
+                }
+
+                if (age >= 35 && age <= 70 && isOverweightOrObese) {
+                    uspstfCards.push({
+                        title: 'Pré-diabetes e Diabetes Mellitus Tipo 2',
+                        badgeText: 'Grau B (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: 'Glicemia de jejum, Teste Oral de Tolerância à Glicose ou HbA1c',
+                        frequency: 'Sugerido a cada 3 anos',
+                        details: 'A USPSTF restringe o rastreamento formal aos adultos de 35 a 70 anos que apresentem sobrepeso ou obesidade (IMC maior ou igual a 25). Pacientes com pré-diabetes devem ser encaminhados para intervenções comportamentais intensivas.'
+                    });
+                } else if (age > 35 && !isOverweightOrObese) {
+                    divergences.push('Diabetes Tipo 2: O Ministério da Saúde rastreia todos os adultos acima de 35 anos (mesmo eutróficos), enquanto a USPSTF recomenda o rastreio Grau B apenas para adultos de 35 a 70 anos com sobrepeso ou obesidade.');
+                }
+            }
+
+            // =========================================================================
+            // 3. DISLIPIDEMIA E RISCO CARDIOVASCULAR GLOBAL
+            // =========================================================================
+            let msLipidEligible = false;
+            let msLipidGrade = 'Grau A (MS)';
+            if (sex === 'M') {
+                if (age >= 35) {
+                    msLipidEligible = true;
+                    msLipidGrade = 'Grau A (MS)';
+                } else if (age >= 20 && (highCvRisk || hasDiabetes || hasHypertension)) {
+                    msLipidEligible = true;
+                    msLipidGrade = 'Grau B (MS)';
+                }
+            } else if (sex === 'F') {
+                if (age >= 45 && (highCvRisk || hasDiabetes || hasHypertension)) {
+                    msLipidEligible = true;
+                    msLipidGrade = 'Grau A (MS)';
+                } else if (age >= 20 && age < 45 && (highCvRisk || hasDiabetes || hasHypertension)) {
+                    msLipidEligible = true;
+                    msLipidGrade = 'Grau B (MS)';
+                }
+            }
+
+            if (msLipidEligible) {
+                msCards.push({
+                    title: 'Rastreamento de Dislipidemia',
+                    badgeText: msLipidGrade,
+                    badgeColor: 'emerald',
+                    exam: 'Perfil Lipídico Completo',
+                    frequency: 'A cada 5 anos',
+                    details: sex === 'M'
+                        ? 'Homens a partir de 35 anos (Grau A) ou homens de 20 a 35 anos com alto risco cardiovascular (Grau B).'
+                        : 'Mulheres com alto risco cardiovascular: de 20 a 45 anos (Grau B) e a partir de 45 anos (Grau A).'
+                });
+            }
+
+            const hasCvFactorUspstf = (highCvRisk || hasDiabetes || hasHypertension || smoking === 'current');
+            if (age >= 40 && age <= 75) {
+                uspstfCards.push({
+                    title: 'Avaliação de Risco Cardiovascular Global e Estatina',
+                    badgeText: 'Grau B (USPSTF)',
+                    badgeColor: 'blue',
+                    exam: 'Cálculo de Risco CV em 10 anos (inclui perfil lipídico)',
+                    frequency: 'Avaliação periódica individualizada (40 a 75 anos)',
+                    details: hasCvFactorUspstf
+                        ? 'A USPSTF não recomenda mais rastrear dislipidemia isolada, e sim calcular o risco cardiovascular global. Como o paciente tem entre 40 e 75 anos e possui fator de risco CV, está indicada prescrição de estatina em prevenção primária se o risco em 10 anos for maior ou igual a 10% (Grau B).'
+                        : 'A USPSTF substituiu o rastreio isolado de dislipidemia pela avaliação do risco cardiovascular global em adultos de 40 a 75 anos para guiar a prevenção primária com estatinas.'
+                });
+            }
+
+            // =========================================================================
+            // 4. CÂNCER DE COLO DO ÚTERO
+            // =========================================================================
+            if (sex === 'F') {
+                if (age >= 25 && age <= 65 && sexuallyActive) {
+                    const hpvInterval = isImmunosuppressed ? 'A cada 3 anos (PVHIV ou Imunossuprimida)' : 'A cada 5 anos';
+                    msCards.push({
+                        title: 'Câncer de Colo do Útero (Nova Diretriz MS 2025)',
+                        badgeText: 'Grau A (MS)',
+                        badgeColor: 'emerald',
+                        exam: 'Teste Molecular DNA-HPV (parcial ou estendido) ou Citologia na transição',
+                        frequency: `${hpvInterval} (no DNA-HPV) ou Trienal após 2 anuais normais (no Papanicolau)`,
+                        details: 'Início aos 25 anos em mulheres que já iniciaram vida sexual. O Ministério da Saúde incorporou o teste molecular de DNA-HPV a cada 5 anos (ou 3 anos para imunossuprimidas/PVHIV), encerrando após os 60 anos se o último teste for negativo. Em locais em transição com Colpocitologia Oncótica, manter regra de 2 exames anuais consecutivos normais seguidos de coleta a cada 3 anos até os 65 anos.'
+                    });
+                } else if (age > 65) {
+                    quaternaryCards.push({
+                        title: 'Interrupção do Rastreio de Câncer de Colo do Útero',
+                        badgeText: 'Prevenção Quaternária',
+                        badgeColor: 'amber',
+                        exam: 'Não coletar DNA-HPV / Papanicolau de rotina',
+                        frequency: 'Encerrado após os 65 anos',
+                        details: 'Em mulheres maiores de 65 anos com rastreamento prévio adequado e último teste negativo acima dos 60 anos, deve-se interromper a coleta para evitar intervenções iatrogênicas e falsos-positivos.'
+                    });
+                }
+
+                if (age >= 21 && age <= 65 && sexuallyActive) {
+                    const is21to29 = (age >= 21 && age <= 29);
+                    uspstfCards.push({
+                        title: 'Câncer de Colo do Útero (USPSTF)',
+                        badgeText: 'Grau A (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: is21to29 ? 'Colpocitologia Oncótica isolada' : 'Teste hrHPV isolado, Co-teste ou Citologia isolada',
+                        frequency: is21to29 ? 'A cada 3 anos (dos 21 aos 29 anos)' : 'A cada 5 anos (hrHPV ou Co-teste) ou a cada 3 anos (Citologia)',
+                        details: 'A USPSTF inicia o rastreamento mais cedo que o Ministério da Saúde (aos 21 anos com citologia trienal). Dos 30 aos 65 anos, permite escolher entre hrHPV a cada 5 anos, co-teste a cada 5 anos ou citologia a cada 3 anos.'
+                    });
+
+                    if (age >= 21 && age < 25) {
+                        divergences.push('Câncer de Colo do Útero: Entre 21 e 24 anos, a USPSTF recomenda rastreamento com citologia a cada 3 anos (Grau A), enquanto o Ministério da Saúde inicia apenas aos 25 anos para evitar sobretratamento de lesões transitórias.');
+                    }
+                }
+            }
+
+            // =========================================================================
+            // 5. CÂNCER DE MAMA E AVALIAÇÃO BRCA1/2
+            // =========================================================================
+            if (sex === 'F') {
+                if (age >= 50 && age <= 74) {
+                    msCards.push({
+                        title: 'Câncer de Mama',
+                        badgeText: 'Grau B (MS)',
+                        badgeColor: 'emerald',
+                        exam: 'Mamografia Bilateral de Rastreamento',
+                        frequency: 'A cada 2 anos (Bienal)',
+                        details: 'Rastreamento organizado na Atenção Primária para mulheres de 50 a 74 anos (com foco consolidado na faixa de 50 a 69 anos na linha de cuidado tradicional).'
+                    });
+                } else if (age >= 40 && age <= 49) {
+                    msCards.push({
+                        title: 'Câncer de Mama (40 a 49 anos - Atualização MS 2025)',
+                        badgeText: 'Decisão Compartilhada (SUS)',
+                        badgeColor: 'amber',
+                        exam: 'Mamografia (Acesso garantido sob demanda após orientação)',
+                        frequency: 'Individualizada (se realizada, bienal)',
+                        details: 'Em 2025 o Ministério da Saúde passou a garantir o acesso à mamografia no SUS para mulheres de 40 a 49 anos. Se a paciente demandar espontaneamente, o médico pode solicitar após esclarecer os riscos (maior taxa de falsos-positivos, biópsias desnecessárias e sobrediagnóstico) e benefícios.'
+                    });
+                    divergences.push('Câncer de Mama (40 a 49 anos): A USPSTF recomenda mamografia bienal de rotina como Grau B a partir dos 40 anos, enquanto o Ministério da Saúde mantém o rastreio populacional prioritário a partir dos 50 anos, garantindo acesso dos 40 aos 49 anos mediante decisão compartilhada.');
+                } else if (age > 74) {
+                    quaternaryCards.push({
+                        title: 'Câncer de Mama acima de 75 anos',
+                        badgeText: 'Grau I (USPSTF) / Não Rastrear (MS)',
+                        badgeColor: 'amber',
+                        exam: 'Evitar mamografia de rotina em assintomáticas',
+                        frequency: 'Não recomendado de rotina',
+                        details: 'Acima de 74 anos o Ministério da Saúde não recomenda rastreamento e a USPSTF classifica como Grau I (evidência insuficiente), devido ao risco elevado de sobrediagnóstico de tumores que não causariam morbimortalidade.'
+                    });
+                }
+
+                if (age >= 40 && age <= 74) {
+                    uspstfCards.push({
+                        title: 'Câncer de Mama (40 a 74 anos)',
+                        badgeText: 'Grau B (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: 'Mamografia de Rastreamento',
+                        frequency: 'A cada 2 anos (Bienal)',
+                        details: 'Na atualização de 2024, a USPSTF reduziu a idade inicial de rastreamento mamográfico rotineiro (Grau B) de 50 para 40 anos, mantendo periodicidade bienal até os 74 anos.'
+                    });
+                }
+
+                if (hasBrcaHistory) {
+                    uspstfCards.push({
+                        title: 'Avaliação de Risco Genético BRCA1/2 e Quimioprofilaxia',
+                        badgeText: 'Grau B (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: 'Ferramenta breve de avaliação de risco familiar + Aconselhamento Genético',
+                        frequency: 'Avaliação imediata',
+                        details: 'Para mulheres com história familiar de câncer de mama, ovário, tubário ou peritoneal, aplicar ferramenta de avaliação familiar. Se positiva, encaminhar para aconselhamento e teste genético BRCA1/2. Em mulheres com 35 anos ou mais e alto risco confirmado, considerar medicação redutora de risco (tamoxifeno, raloxifeno ou inibidores da aromatase - Grau B).'
+                    });
+                }
+            }
+
+            // =========================================================================
+            // 6. CÂNCER COLORRETAL
+            // =========================================================================
+            if (age >= 50 && age <= 75) {
+                msCards.push({
+                    title: 'Câncer Colorretal',
+                    badgeText: 'Grau A (MS)',
+                    badgeColor: 'emerald',
+                    exam: 'Pesquisa de Sangue Oculto nas Fezes, Retossigmoidoscopia ou Colonoscopia',
+                    frequency: 'Anual ou a cada 2 anos (Sangue Oculto)',
+                    details: 'Indicado pelo Ministério da Saúde para adultos de 50 a 75 anos (ou enquanto a expectativa de vida for maior que 10 anos).'
+                });
+            }
+
+            if (age >= 45 && age <= 75) {
+                const is45to49 = (age >= 45 && age <= 49);
+                uspstfCards.push({
+                    title: 'Câncer Colorretal',
+                    badgeText: is45to49 ? 'Grau B (45 a 49 anos)' : 'Grau A (50 a 75 anos)',
+                    badgeColor: 'blue',
+                    exam: 'Sangue oculto fecal, Colonoscopia, Retossigmoidoscopia ou Colonografia por TC',
+                    frequency: 'Sangue oculto anual, Colonoscopia a cada 10 anos, ou Retossigmoidoscopia/TC a cada 5 anos',
+                    details: 'A USPSTF inicia o rastreio aos 45 anos (Grau B dos 45 aos 49 anos e Grau A dos 50 aos 75 anos). Dos 76 aos 85 anos é Grau C (decisão individualizada conforme saúde global e rastreios prévios).'
+                });
+
+                if (is45to49) {
+                    divergences.push('Câncer Colorretal (45 a 49 anos): A USPSTF recomenda iniciar o rastreamento aos 45 anos (Grau B), enquanto o Ministério da Saúde recomenda iniciar aos 50 anos (Grau A).');
+                }
+            } else if (age >= 76 && age <= 85) {
+                quaternaryCards.push({
+                    title: 'Câncer Colorretal (76 a 85 anos)',
+                    badgeText: 'Grau C (USPSTF)',
+                    badgeColor: 'amber',
+                    exam: 'Decisão Individualizada',
+                    frequency: 'Avaliar expectativa de vida maior que 10 anos',
+                    details: 'Entre 76 e 85 anos o benefício líquido é pequeno. Só considerar rastreamento se o paciente tiver expectativa de vida superior a 10 anos, bom estado funcional e nunca tiver sido rastreado. Após os 85 anos, interromper (Grau D).'
+                });
+            }
+
+            // =========================================================================
+            // 7. CÂNCER DE PULMÃO (DIVERGÊNCIA CLÁSSICA MS vs USPSTF)
+            // =========================================================================
+            if (age >= 50 && age <= 80 && hasEverSmoked && packYears20 && quitWithin15) {
+                uspstfCards.push({
+                    title: 'Câncer de Pulmão (Alto Risco Tabágico)',
+                    badgeText: 'Grau B (USPSTF)',
+                    badgeColor: 'blue',
+                    exam: 'Tomografia Computadorizada (TC) de Tórax de Baixa Dose',
+                    frequency: 'Anual',
+                    details: 'Recomendada pela USPSTF para adultos de 50 a 80 anos com carga tabágica maior ou igual a 20 anos-maço que fumam atualmente ou cessaram há menos de 15 anos. Interromper quando completar 15 anos de abstinência.',
+                    alertNote: 'DIVERGÊNCIA IMPORTANTE: O Ministério da Saúde NÃO recomenda rastreamento de câncer de pulmão com TC de baixa dose, priorizando a prevenção primária e o controle do tabagismo.'
+                });
+
+                quaternaryCards.push({
+                    title: 'Posição do Ministério da Saúde sobre Rastreio de Câncer de Pulmão',
+                    badgeText: 'Não Recomendado pelo MS',
+                    badgeColor: 'rose',
+                    exam: 'Foco em Cessação do Tabagismo (Prevenção Primária)',
+                    frequency: 'Contínuo nas consultas',
+                    details: 'Para o Ministério da Saúde, o rastreamento tomográfico populacional não é indicado no SUS devido ao alto índice de falsos-positivos em áreas endêmicas de doenças granulomatosas (como tuberculose) e riscos de procedimentos invasivos.'
+                });
+
+                divergences.push('Câncer de Pulmão: Paciente preenche critério para TC de tórax de baixa dose anual pela USPSTF (Grau B: 50 a 80 anos, carga maior ou igual a 20 anos-maço), mas o Ministério da Saúde NÃO recomenda este rastreamento.');
+            }
+
+            // =========================================================================
+            // 8. ANEURISMA DE AORTA ABDOMINAL (AAA - DIVERGÊNCIA MS vs USPSTF)
+            // =========================================================================
+            if (sex === 'M' && age >= 65 && age <= 75) {
+                if (hasEverSmoked) {
+                    uspstfCards.push({
+                        title: 'Aneurisma de Aorta Abdominal (AAA)',
+                        badgeText: 'Grau B (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: 'Ultrassonografia (USG) de Abdome',
+                        frequency: 'Uma única vez na vida',
+                        details: 'A USPSTF recomenda rastreamento único com ultrassonografia abdominal para homens de 65 a 75 anos que já fumaram em algum momento da vida (tabagistas atuais ou ex-tabagistas).',
+                        alertNote: 'DIVERGÊNCIA: O Ministério da Saúde não possui recomendação de rastreamento populacional para Aneurisma de Aorta Abdominal.'
+                    });
+                    divergences.push('Aneurisma de Aorta Abdominal: Para homens de 65 a 75 anos que já fumaram, a USPSTF recomenda USG abdominal única na vida (Grau B), enquanto o Ministério da Saúde não recomenda rastreio rotineiro.');
+                } else {
+                    quaternaryCards.push({
+                        title: 'Aneurisma de Aorta Abdominal em Homem que Nunca Fumou',
+                        badgeText: 'Grau C (USPSTF)',
+                        badgeColor: 'amber',
+                        exam: 'Não rastrear de rotina',
+                        frequency: 'Seletivo apenas se história familiar forte',
+                        details: 'Para homens de 65 a 75 anos que nunca fumaram, a USPSTF classifica o rastreamento com USG como Grau C (benefício pequeno, não ofertar rotineiramente).'
+                    });
+                }
+            }
+
+            // =========================================================================
+            // 9. OSTEOPOROSE
+            // =========================================================================
+            const msOsteoEligible = (sex === 'F' && age >= 65) || (sex === 'M' && age >= 70) || (age >= 40 && (hasOsteoporosisRisk || isUnderweight));
+            if (msOsteoEligible) {
+                msCards.push({
+                    title: 'Rastreamento de Osteoporose',
+                    badgeText: 'Recomendado (MS)',
+                    badgeColor: 'emerald',
+                    exam: 'Densitometria Óssea (DXA)',
+                    frequency: 'Periodicidade não especificada',
+                    details: 'Indicado pelo Ministério da Saúde para mulheres com 65 anos ou mais, homens com 70 anos ou mais, ou adultos na presença de fatores de risco (baixo peso, fratura por fragilidade prévia, uso crônico de corticoides ou doenças que afetam a massa óssea).'
+                });
+            }
+
+            const uspstfOsteoEligible = (sex === 'F' && age >= 65) || (sex === 'F' && age < 65 && age >= 45 && (hasOsteoporosisRisk || isUnderweight));
+            if (uspstfOsteoEligible) {
+                uspstfCards.push({
+                    title: 'Osteoporose para Prevenção de Fraturas',
+                    badgeText: 'Grau B (USPSTF)',
+                    badgeColor: 'blue',
+                    exam: 'Densitometria Óssea',
+                    frequency: 'Intervalo ideal não estabelecido',
+                    details: 'A USPSTF recomenda rastreamento para todas as mulheres com 65 anos ou mais, e para mulheres na pós-menopausa com menos de 65 anos que apresentem risco aumentado de fratura osteoporótica.'
+                });
+            }
+            if (sex === 'M' && age >= 70) {
+                divergences.push('Osteoporose em Homens: O Ministério da Saúde indica densitometria óssea para homens a partir de 70 anos, enquanto a USPSTF foca sua recomendação Grau B apenas em mulheres (considerando evidência insuficiente para homens).');
+            }
+
+            // =========================================================================
+            // 10. INFECÇÕES SEXUALMENTE TRANSMISSÍVEIS (IST) E HEPATITES VIRAIS
+            // =========================================================================
+            if (sexuallyActive || isPregnant || stiHighRisk) {
+                if (age < 30 || stiHighRisk || isPregnant) {
+                    msCards.push({
+                        title: 'Infecções Sexualmente Transmissíveis (HIV e Sífilis)',
+                        badgeText: 'Recomendado (MS)',
+                        badgeColor: 'emerald',
+                        exam: 'Testes Rápidos para HIV e Sífilis (e Hepatites B e C conforme risco)',
+                        frequency: 'Anual (menores de 30 anos ou grupos de risco)',
+                        details: 'O Ministério da Saúde preconiza testagem anual para HIV e Sífilis em pessoas menores de 30 anos sexualmente ativas e em grupos de maior vulnerabilidade. O acesso ao teste rápido é direito do cidadão na APS sem necessidade de pedido médico.'
+                    });
+                }
+
+                if (age >= 15 && age <= 65 || stiHighRisk || isPregnant) {
+                    uspstfCards.push({
+                        title: 'Rastreamento de HIV (e Avaliação de PrEP)',
+                        badgeText: 'Grau A (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: 'Sorologia ou Teste Rápido para HIV',
+                        frequency: stiHighRisk ? 'Periódico (sugerido 3 a 5 anos ou anual conforme risco)' : 'Pelo menos uma vez entre 15 e 65 anos',
+                        details: stiHighRisk
+                            ? 'Rastreamento Grau A para HIV. Como há comportamento ou exposição de risco aumentado para aquisição de HIV, a USPSTF recomenda fortemente prescrever Profilaxia Pré-Exposição (PrEP) com antirretrovirais eficazes (Grau A).'
+                            : 'A USPSTF recomenda rastrear HIV em todos os adolescentes e adultos de 15 a 65 anos (Grau A) e em todas as gestantes.'
+                    });
+                }
+
+                if (age >= 18 && age <= 79) {
+                    uspstfCards.push({
+                        title: 'Rastreamento Universal de Hepatite C',
+                        badgeText: 'Grau B (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: 'Sorologia Anti-HCV',
+                        frequency: 'Rastreio universal em adultos de 18 a 79 anos',
+                        details: 'A USPSTF recomenda rastrear infecção pelo vírus da Hepatite C em todos os adultos de 18 a 79 anos, independentemente de fatores de risco.'
+                    });
+                }
+
+                if (stiHighRisk || isPregnant) {
+                    uspstfCards.push({
+                        title: 'Sífilis e Hepatite B',
+                        badgeText: 'Graus A e B (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: 'Teste treponêmico/VDRL e HBsAg',
+                        frequency: isPregnant ? 'Na 1ª consulta de pré-natal' : 'Periódico em pessoas com risco aumentado',
+                        details: 'A USPSTF recomenda rastrear Sífilis (Grau A) e Hepatite B (Grau B em adultos de risco; Grau A em gestantes).'
+                    });
+                }
+
+                if (sex === 'F' && sexuallyActive && (age <= 24 || stiHighRisk)) {
+                    uspstfCards.push({
+                        title: 'Rastreamento de Clamídia e Gonorreia',
+                        badgeText: 'Grau B (USPSTF)',
+                        badgeColor: 'blue',
+                        exam: 'Teste de amplificação de ácidos nucleicos (NAAT)',
+                        frequency: 'Anual ou conforme exposição',
+                        details: 'A USPSTF recomenda rastrear Clamídia e Gonorreia em todas as mulheres sexualmente ativas com 24 anos ou menos, e em mulheres com 25 anos ou mais que apresentem risco aumentado.'
+                    });
+                }
+            }
+
+            // =========================================================================
+            // 11. SAÚDE MENTAL, COMPORTAMENTO, GESTAÇÃO E IDOSOS (USPSTF A & B)
+            // =========================================================================
+            if (age >= 8 && age <= 64) {
+                uspstfCards.push({
+                    title: 'Rastreamento de Transtornos de Ansiedade e Depressão',
+                    badgeText: 'Grau B (USPSTF)',
+                    badgeColor: 'blue',
+                    exam: 'Questionários validados na APS (ex: PHQ-9, GAD-7, EPDS no puerpério)',
+                    frequency: 'Oportunístico na Atenção Primária',
+                    details: 'A USPSTF recomenda rastrear Transtornos de Ansiedade em crianças/adolescentes (8 a 18 anos) e adultos até 64 anos (incluindo gestantes e puérperas - Grau B), além de rastrear Depressão em adolescentes (12 a 18 anos) e em todos os adultos (Grau B).'
+                });
+            } else if (age >= 65) {
+                uspstfCards.push({
+                    title: 'Rastreamento de Depressão e Prevenção de Quedas no Idoso',
+                    badgeText: 'Grau B (USPSTF)',
+                    badgeColor: 'blue',
+                    exam: 'Escala de Depressão Geriátrica + Prescrição de Exercícios Físicos',
+                    frequency: 'Contínuo no acompanhamento geriátrico',
+                    details: 'A USPSTF recomenda rastrear depressão em idosos (Grau B) e prescrever intervenções de exercícios físicos estruturados para prevenir quedas em idosos da comunidade com 65 anos ou mais sob risco aumentado de quedas (Grau B).'
+                });
+            }
+
+            if (age >= 18) {
+                uspstfCards.push({
+                    title: 'Rastreio de Uso Prejudicial de Álcool, Drogas e Tabaco',
+                    badgeText: 'Graus A e B (USPSTF)',
+                    badgeColor: 'blue',
+                    exam: 'Anamnese estruturada (ex: AUDIT-C) e Aconselhamento Breve',
+                    frequency: 'Rotina em adultos (18 anos ou mais)',
+                    details: smoking === 'current'
+                        ? 'O paciente é tabagista atual: a USPSTF recomenda intervenção comportamental e farmacoterapia aprovada para cessação do tabagismo (Grau A), além de rastrear uso prejudicial de álcool e outras drogas (Grau B).'
+                        : 'Questionar todos os adultos sobre tabagismo (Grau A), consumo de risco de álcool (Grau B) e uso não saudável de drogas por meio de perguntas clínicas (Grau B).'
+                });
+            }
+
+            if (sex === 'F' && age >= 14 && age <= 50) {
+                uspstfCards.push({
+                    title: 'Violência por Parceiro Íntimo e Suplementação de Ácido Fólico',
+                    badgeText: 'Graus A e B (USPSTF)',
+                    badgeColor: 'blue',
+                    exam: 'Rastreio de Violência Doméstica (Grau B) + Ácido Fólico se planejar gestação (Grau A)',
+                    frequency: 'Em mulheres em idade reprodutiva',
+                    details: isPlanningPreg
+                        ? 'Paciente planejando gestação: prescrever suplementação diária de 400 a 800 mcg (0,4 a 0,8 mg) de Ácido Fólico para prevenção de defeitos do tubo neural (Grau A), além de rastrear violência por parceiro íntimo (Grau B).'
+                        : 'Rastrear violência por parceiro íntimo em mulheres em idade fértil (Grau B) e orientar ácido fólico (400 a 800 mcg/dia - Grau A) para todas que planejam ou podem engravidar.'
+                });
+            }
+
+            if (isPregnant) {
+                uspstfCards.push({
+                    title: 'Cuidados Preventivos Específicos da Gestação (USPSTF)',
+                    badgeText: 'Graus A e B (USPSTF)',
+                    badgeColor: 'blue',
+                    exam: 'Urocultura, Tipagem Rh(D), TOTG (24 sem), PA e Apoio à Amamentação',
+                    frequency: `Gestante atual com ${igWeeks} semanas`,
+                    details: `Condutas Grau A/B da USPSTF no pré-natal: (1) Urocultura para bacteriúria assintomática (Grau B); (2) Tipagem sanguínea Rh(D) e pesquisa de anticorpos na 1ª consulta (Grau A) e repetição entre 24 e 28 semanas se Rh negativo não sensibilizada (Grau B); (3) Rastreio de Diabetes Gestacional a partir de 24 semanas (Grau B); (4) Aconselhamento para ganho de peso saudável e apoio ao aleitamento materno (Grau B).`,
+                    alertNote: highPreeclampsiaRisk
+                        ? 'ALTO RISCO PARA PRÉ-ECLÂMPSIA SELECIONADO: A USPSTF recomenda prescrever Ácido Acetilsalicílico (AAS / Aspirina) em baixa dose (81 mg/dia, ou 100 mg disponível no SUS) após 12 semanas de gestação como medicação preventiva (Grau B).'
+                        : ''
+                });
+            }
+
+            // =========================================================================
+            // 12. SEÇÃO C: PREVENÇÃO QUATERNÁRIA E CÂNCER DE PRÓSTATA (INCA / MS / USPSTF)
+            // =========================================================================
+            if (sex === 'M' && age >= 45) {
+                const is55to69 = (age >= 55 && age <= 69);
+                quaternaryCards.push({
+                    title: 'Rastreamento de Câncer de Próstata (PSA e Toque Retal)',
+                    badgeText: is55to69 ? 'Grau D (MS) / Grau C (USPSTF)' : 'Grau D (MS e USPSTF - Não Rastrear)',
+                    badgeColor: is55to69 ? 'amber' : 'rose',
+                    exam: 'Não solicitar PSA ou toque retal de rotina populacional',
+                    frequency: 'Se demanda espontânea: Tomada de Decisão Compartilhada (Nota Técnica MS nº 9/2023)',
+                    details: `O Ministério da Saúde e o INCA contraindicam o rastreamento populacional do câncer de próstata (Grau D), pois ele gera intenso sobrediagnóstico (overdiagnosis) e sobretratamento (overtreatment) sem redução significativa da mortalidade global. A USPSTF classifica como Grau C dos 55 aos 69 anos (decisão individualizada) e Grau D a partir dos 70 anos.`,
+                    alertNote: `DADOS DO INCA PARA EXPLICAR AO PACIENTE (a cada 1.000 homens de 55 a 69 anos rastreados por 13 anos): 178 terão PSA alterado e farão biópsia descobrindo que NÃO têm câncer (sofrendo dor, sangramento e infecção); 100 confirmarão câncer, mas 50% são tumores indolentes que nunca ameaçariam a vida; de cada 100 operados, 60 apresentarão impotência sexual e 20 incontinência urinária; apenas 1 morte por câncer de próstata é evitada em 1.000 homens rastreados.`
+                });
+            }
+
+            if (age >= 60) {
+                quaternaryCards.push({
+                    title: 'Revisão de Polifarmácia no Idoso',
+                    badgeText: 'Prevenção Quaternária (OMS)',
+                    badgeColor: 'amber',
+                    exam: 'Reconciliação Medicamentosa e Desprescrição',
+                    frequency: 'Em toda consulta geriátrica',
+                    details: 'Segundo a OMS, polifarmácia é o uso rotineiro e concomitante de 4 ou mais medicamentos. Avaliar ativamente a desprescrição de fármacos inapropriados para evitar quedas, interações e iatrogenias.'
+                });
+            }
+
+            // =========================================================================
+            // 13. SEÇÃO D: CALENDÁRIO VACINAL (PNI / MS E CRIE 2025-2026)
+            // =========================================================================
+
+            // 13.1 HEPATITE B
+            const needsDoubleDoseHepB = (hasLiverKidney || isImmunosuppressed);
+            const needsAntiHbsCheck = (isHealthWorker || hasDiabetes || hasLiverKidney || isImmunosuppressed);
+            let hepBText = '';
+            let hepBBadge = '';
+            let hepBColor = 'teal';
+            if (vacHepB === 'complete') {
+                hepBBadge = 'Esquema Completo';
+                hepBColor = 'slate';
+                hepBText = 'Paciente já possui 3 doses comprovadas de Hepatite B. Não há necessidade de doses de reforço para indivíduos imunocompetentes.';
+            } else if (vacHepB === 'incomplete') {
+                hepBBadge = 'Completar Esquema';
+                hepBColor = 'emerald';
+                hepBText = 'Completar o esquema de 3 doses (não reiniciar o esquema; apenas aplicar as doses faltantes). Via intramuscular no deltoide, sem limite de idade.';
+            } else {
+                hepBBadge = 'Iniciar Vacinação';
+                hepBColor = 'emerald';
+                hepBText = 'Iniciar esquema completo de 3 doses (intervalos de 0, 1 e 6 meses), via intramuscular no músculo deltoide, sem limite superior de idade.';
+            }
+
+            let hepBAlert = '';
+            if (needsDoubleDoseHepB) {
+                hepBAlert += 'GRUPO ESPECIAL CRIE: Devido a imunossupressão, neoplasia, hepatopatia crônica avançada, Hepatite C ou doença renal crônica/hemodiálise, está indicado esquema especial com DOSE DOBRADA em 4 doses. ';
+            }
+            if (needsAntiHbsCheck) {
+                hepBAlert += 'Solicitar sorologia Anti-HBs após o esquema para confirmar soroconversão (Anti-HBs maior ou igual a 10 mUI/mL).';
+            }
+
+            vaccineCards.push({
+                title: 'Vacina Hepatite B (Inativada)',
+                badgeText: hepBBadge,
+                badgeColor: hepBColor,
+                exam: needsDoubleDoseHepB ? '4 doses com volume dobrado (CRIE)' : 'Esquema de 3 doses (0, 1 e 6 meses)',
+                frequency: 'Sem reforço rotineiro após esquema completo',
+                details: hepBText,
+                alertNote: hepBAlert
+            });
+
+            // 13.2 DUPLA ADULTO (dT) E TRÍPLICE BACTERIANA ACELULAR (dTpa)
+            let dtTitle = 'Dupla Adulto (dT - Difteria e Tétano)';
+            let dtBadge = 'Em dia';
+            let dtColor = 'slate';
+            let dtExam = 'Reforço a cada 10 anos';
+            let dtDetails = '';
+            let dtAlert = '';
+
+            if (isPregnant) {
+                dtTitle = 'Vacina dTpa na Gestação (Difteria, Tétano e Coqueluche)';
+                dtBadge = igWeeks >= 20 ? 'Aplicar dTpa Agora' : 'Agendar a partir de 20 semanas';
+                dtColor = 'emerald';
+                dtExam = '1 dose de dTpa a partir da 20ª semana (idealmente a partir da 27ª semana)';
+                dtDetails = 'Toda gestante deve receber 1 dose de dTpa a cada gestação a partir da 20ª semana de idade gestacional (preferencialmente a partir da 27ª semana) para transferência transplacentária de anticorpos contra coqueluche ao feto, independentemente do histórico prévio de dT.';
+            } else if (hasNeonatalContact) {
+                dtTitle = 'Reforço com dTpa (Profissional em Neonatologia / Contato com Lactente)';
+                dtBadge = 'Indicado dTpa';
+                dtColor = 'emerald';
+                dtExam = 'Reforço com dTpa (Tríplice Bacteriana Acelular)';
+                dtDetails = 'Profissionais de saúde que atuam em maternidades e unidades de internação neonatal, ou familiares/cuidadores em contato com lactentes, devem receber reforço com dTpa (considerar reforço se a última dose foi há mais de 5 anos).';
+            } else {
+                if (vacDt === 'none') {
+                    dtBadge = 'Iniciar Esquema (3 doses)';
+                    dtColor = 'emerald';
+                    dtExam = '3 doses de dT (0, 2 e 4 meses)';
+                    dtDetails = 'Iniciar esquema básico de 3 doses da vacina dupla adulto (dT) e manter reforço a cada 10 anos por toda a vida.';
+                } else if (vacDt === 'incomplete') {
+                    dtBadge = 'Completar 3 Doses';
+                    dtColor = 'emerald';
+                    dtExam = 'Completar esquema de 3 doses de dT';
+                    dtDetails = 'Aplicar as doses faltantes para totalizar 3 doses de dT e agendar reforço a cada 10 anos.';
+                } else if (vacDt === 'complete_due') {
+                    dtBadge = 'Aplicar Reforço Agora';
+                    dtColor = 'emerald';
+                    dtExam = '1 dose de reforço de dT';
+                    dtDetails = 'Última dose há 10 anos ou mais: aplicar 1 dose de reforço de dT agora.';
+                } else {
+                    dtBadge = 'Esquema em Dia';
+                    dtColor = 'slate';
+                    dtExam = 'Aguardar próximo reforço decenal';
+                    dtDetails = 'Esquema completo com último reforço há menos de 10 anos. Manter reforço de 10 em 10 anos.';
+                }
+            }
+
+            vaccineCards.push({
+                title: dtTitle,
+                badgeText: dtBadge,
+                badgeColor: dtColor,
+                exam: dtExam,
+                frequency: 'Reforço a cada 10 anos (ou a cada gestação com dTpa)',
+                details: dtDetails,
+                alertNote: dtAlert
+            });
+
+            // 13.3 FEBRE AMARELA
+            let faBadge = '';
+            let faColor = 'emerald';
+            let faExam = 'Dose única subcutânea';
+            let faDetails = '';
+            let faAlert = '';
+
+            if (isImmunosuppressed) {
+                faBadge = 'Contraindicada (Vírus Vivo)';
+                faColor = 'rose';
+                faExam = 'Não vacinar em imunossupressão grave';
+                faDetails = 'Por ser vacina de vírus vivo atenuado cultivado em ovo, é contraindicada em pacientes imunossuprimidos graves (PVHIV com CD4 menor que 200, quimioterapia ativa, transplante de órgãos sólidos, corticoterapia imunossupressora e doenças do timo como miastenia gravis ou timoma).';
+            } else if (isPregnant) {
+                faBadge = 'Contraindicada na Gestação';
+                faColor = 'rose';
+                faExam = 'Evitar na gestação (salvo alto risco epidemiológico)';
+                faDetails = 'Classicamente contraindicada em gestantes por ser vírus vivo atenuado. Se viagem inadiável para país que exige CIVP sem risco real de infecção, emitir termo de isenção médica.';
+            } else if (vacFa === 'after5') {
+                faBadge = 'Imunizado';
+                faColor = 'slate';
+                faExam = 'Não há necessidade de reforço';
+                faDetails = 'Paciente já recebeu 1 dose plena após os 5 anos de idade. Pelo PNI atual, a dose única após os 5 anos confere proteção duradoura sem necessidade de reforço decenal.';
+            } else if (vacFa === 'before5') {
+                faBadge = 'Aplicar 1 Dose de Reforço';
+                faColor = 'emerald';
+                faExam = '1 dose de reforço subcutânea';
+                faDetails = 'Como o paciente recebeu a dose única antes dos 5 anos de idade, o Ministério da Saúde preconiza aplicar 1 dose de reforço na vida adulta.';
+            } else if (vacFa === 'fractional') {
+                faBadge = 'Reforço Dose Plena';
+                faColor = 'emerald';
+                faExam = '1 dose padrão (plena)';
+                faDetails = 'Pacientes que receberam dose fracionada em campanhas anteriores devem receber reforço com dose normal após 10 anos.';
+            } else {
+                if (age >= 60) {
+                    faBadge = 'Avaliar Risco-Benefício';
+                    faColor = 'amber';
+                    faExam = 'Individualizar primovacinação acima de 60 anos';
+                    faDetails = 'Em idosos (60 anos ou mais) nunca vacinados, a primovacinação contra Febre Amarela exige avaliação médica individualizada do risco epidemiológico frente ao risco de eventos adversos viscerotrópicos.';
+                } else {
+                    faBadge = 'Aplicar Dose Única';
+                    faColor = 'emerald';
+                    faExam = 'Dose única (0,5 mL subcutânea)';
+                    faDetails = 'Indicada para todo o território nacional dos 9 meses aos 59 anos em dose única.';
+                }
+            }
+
+            if (isBreastfeedingU6m && vacFa !== 'after5') {
+                faAlert = 'ATENÇÃO NUTRIZ (BEBÊ MENOR QUE 6 MESES): A vacina de Febre Amarela é contraindicada até o bebê completar 6 meses. Se a vacinação não puder ser adiada por alto risco epidemiológico, suspender o aleitamento materno por 10 dias após a aplicação.';
+            }
+
+            vaccineCards.push({
+                title: 'Vacina Febre Amarela (Vírus Vivo Atenuado)',
+                badgeText: faBadge,
+                badgeColor: faColor,
+                exam: faExam,
+                frequency: 'Dose única (ou 1 reforço se vacinado antes dos 5 anos)',
+                details: faDetails,
+                alertNote: faAlert
+            });
+
+            // 13.4 TRÍPLICE VIRAL (SCR - SARAMPO, CAXUMBA E RUBÉOLA)
+            let scrBadge = '';
+            let scrColor = 'emerald';
+            let scrExam = '';
+            let scrDetails = '';
+            let scrAlert = '';
+
+            if (isPregnant || isImmunosuppressed) {
+                scrBadge = 'Contraindicada (Vírus Vivo)';
+                scrColor = 'rose';
+                scrExam = 'Não aplicar em gestantes ou imunossuprimidos';
+                scrDetails = 'Vacina de vírus vivo atenuado: contraindicada na gestação e em pacientes em uso de imunossupressores ou quimioterapia (aguardar pelo menos 3 meses após o término da quimioterapia ou suspensão da terapia imunossupressora).';
+            } else if (isHealthWorker) {
+                if (vacScr === '2doses') {
+                    scrBadge = 'Esquema Completo (2 doses)';
+                    scrColor = 'slate';
+                    scrExam = 'Nenhuma dose necessária';
+                    scrDetails = 'Profissional de saúde já possui 2 doses comprovadas de Tríplice Viral.';
+                } else {
+                    scrBadge = 'Completar 2 Doses (Prof. Saúde)';
+                    scrColor = 'emerald';
+                    scrExam = vacScr === '1dose' ? 'Aplicar 2ª dose de SCR' : 'Aplicar 2 doses de SCR (0 e 1 mês)';
+                    scrDetails = 'Profissionais da saúde, independentemente da idade, devem possuir obrigatoriamente 2 doses comprovadas da vacina Tríplice Viral (SCR).';
+                }
+            } else if (age <= 29) {
+                if (vacScr === '2doses') {
+                    scrBadge = 'Completo (2 doses)';
+                    scrColor = 'slate';
+                    scrExam = 'Esquema em dia';
+                    scrDetails = 'Adultos de 20 a 29 anos precisam de 2 doses de SCR; paciente já está com esquema completo.';
+                } else if (vacScr === '1dose') {
+                    scrBadge = 'Aplicar 2ª Dose';
+                    scrColor = 'emerald';
+                    scrExam = '1 dose de SCR para completar 2 doses';
+                    scrDetails = 'Pessoas de 20 a 29 anos devem ter 2 doses de Tríplice Viral. Como possui apenas 1 dose, aplicar a segunda dose agora.';
+                } else {
+                    scrBadge = 'Aplicar 2 Doses';
+                    scrColor = 'emerald';
+                    scrExam = '2 doses de SCR (intervalo de 1 mês)';
+                    scrDetails = 'Adultos não vacinados entre 20 e 29 anos devem receber 2 doses da Tríplice Viral (esquema 0 e 1 mês), via subcutânea.';
+                }
+            } else if (age >= 30 && age <= 59) {
+                if (vacScr === '1dose' || vacScr === '2doses') {
+                    scrBadge = 'Completo para a Idade';
+                    scrColor = 'slate';
+                    scrExam = 'Esquema em dia (mínimo 1 dose dos 30 aos 59 anos)';
+                    scrDetails = 'Adultos de 30 a 59 anos (não profissionais de saúde) necessitam de pelo menos 1 dose de Tríplice Viral.';
+                } else {
+                    scrBadge = 'Aplicar Dose Única';
+                    scrColor = 'emerald';
+                    scrExam = '1 dose de SCR subcutânea';
+                    scrDetails = 'Adultos não vacinados de 30 a 59 anos devem receber 1 dose de Tríplice Viral (SCR).';
+                }
+            } else {
+                scrBadge = 'Fora da Faixa de Rotina';
+                scrColor = 'slate';
+                scrExam = 'Indicada de rotina até 59 anos';
+                scrDetails = 'No calendário do PNI, a Tríplice Viral é preconizada rotineiramente até os 59 anos, 11 meses e 29 dias (exceto profissionais de saúde ou situações de bloqueio de surto).';
+            }
+
+            if (sex === 'F' && age >= 14 && age <= 49 && !isPregnant && scrColor === 'emerald') {
+                scrAlert = 'Orientar evitar gestação por 30 dias após a aplicação da Tríplice Viral.';
+            }
+
+            vaccineCards.push({
+                title: 'Tríplice Viral - SCR (Sarampo, Caxumba e Rubéola)',
+                badgeText: scrBadge,
+                badgeColor: scrColor,
+                exam: scrExam,
+                frequency: '2 doses (20 a 29 anos ou Prof. Saúde) / 1 dose (30 a 59 anos)',
+                details: scrDetails,
+                alertNote: scrAlert
+            });
+
+            // 13.5 INFLUENZA (CAMPANHA ANUAL)
+            const influenzaEligible = (age >= 60 || age < 5 || isPregnant || isPostpartum || isHealthWorker || isIndigenous || hasAnyChronicComorbidity || isBedriddenIlpi);
+            vaccineCards.push({
+                title: 'Vacina Influenza Trivalente (Gripe)',
+                badgeText: influenzaEligible ? 'Indicada no SUS (Campanha)' : 'Disponível na Rede Privada',
+                badgeColor: influenzaEligible ? 'emerald' : 'slate',
+                exam: 'Dose única anual (Intramuscular)',
+                frequency: 'Anual (Campanha Sazonal)',
+                details: influenzaEligible
+                    ? 'Paciente pertence aos grupos prioritários do Ministério da Saúde para vacinação anual gratuita contra Influenza (idosos 60 anos ou mais, gestantes, puérperas até 45 dias, crianças menores de 5 anos, trabalhadores da saúde, indígenas e portadores de doenças crônicas/comorbidades).'
+                    : 'Paciente fora dos grupos prioritários da campanha nacional do SUS, mas pode receber a vacina anualmente (trivalente ou quadrivalente na rede suplementar/privada ou em ampliação de campanha).'
+            });
+
+            // 13.6 ANTIPNEUMOCÓCICA 20-VALENTE (ATUALIZAÇÃO PNI 2026)
+            const pneumo20SusEligible = ((age >= 60 && isBedriddenIlpi) || (isIndigenous && age >= 5));
+            const pneumo20CrieEligible = (hasDiabetes || hasLungHeart || hasLiverKidney || isImmunosuppressed);
+
+            if (pneumo20SusEligible || pneumo20CrieEligible || age >= 60) {
+                let p20Badge = 'Dose Única (Atualização 2026)';
+                let p20Color = 'emerald';
+                let p20Details = '';
+                if (pneumo20SusEligible) {
+                    p20Details = 'Indicada diretamente pelo Calendário PNI: Idosos acamados ou institucionalizados (ILPI) e população indígena a partir dos 5 anos recebem DOSE ÚNICA da nova vacina Pneumocócica 20-valente (VPC20).';
+                } else if (pneumo20CrieEligible) {
+                    p20Badge = 'Indicada via CRIE (Dose Única)';
+                    p20Details = 'Paciente possui indicação formal pelo Manual do CRIE (Diabetes Mellitus, cardiopatia crônica, pneumopatia crônica exceto asma intermitente/leve, nefropatia/hemodiálise, hepatopatia crônica ou imunodeficiência) para receber a Pneumocócica 20-valente em DOSE ÚNICA.';
+                } else {
+                    p20Badge = 'Recomendada SBIm / Privada';
+                    p20Color = 'teal';
+                    p20Details = 'No SUS a Pneumo 20 para idosos sem comorbidades do CRIE é direcionada a acamados/institucionalizados; para idosos hígidos da comunidade, é recomendada pela SBIm.';
+                }
+
+                vaccineCards.push({
+                    title: 'Vacina Antipneumocócica 20-valente (Pneumo 20)',
+                    badgeText: p20Badge,
+                    badgeColor: p20Color,
+                    exam: 'Dose Única Intramuscular (Substituiu a antiga Pneumo 23)',
+                    frequency: 'Dose única (não requer reforço após 5 anos)',
+                    details: p20Details,
+                    alertNote: 'ATUALIZAÇÃO PNI 2026: O SUS substituiu a antiga Pneumo 23 (que exigia 2 doses com intervalo de 5 anos) pela Pneumocócica Conjugada 20-valente (Pneumo 20) em esquema de DOSE ÚNICA, ampliando cobertura para sorotipos invasivos como 3, 6A e 19A.'
+                });
+            }
+
+            // 13.7 COVID-19 (ESQUEMA PNI 2024-2026)
+            let covidBadge = '';
+            let covidColor = 'emerald';
+            let covidFreq = '';
+            let covidDetails = '';
+
+            if (age >= 60 || isImmunosuppressed) {
+                covidBadge = '1 Dose Semestral';
+                covidFreq = 'A cada 6 meses (Semestral)';
+                covidDetails = 'Pelo esquema atual do Ministério da Saúde, idosos (60 anos ou mais) e pessoas imunocomprometidas devem receber 1 dose periódica de vacina Covid-19 a cada 6 meses.';
+            } else if (isPregnant) {
+                covidBadge = '1 Dose por Gestação';
+                covidFreq = '1 dose em cada gestação';
+                covidDetails = 'Gestantes devem receber 1 dose de vacina Covid-19 a cada gestação, em qualquer trimestre, independentemente do histórico vacinal prévio.';
+            } else if (hasAnyChronicComorbidity || isHealthWorker || isIndigenous || isBedriddenIlpi || isPostpartum) {
+                covidBadge = '1 Dose Anual';
+                covidFreq = 'Anual (Grupo Prioritário)';
+                covidDetails = 'Pacientes pertencentes a grupos especiais (comorbidades, trabalhadores da saúde, indígenas, puérperas, residentes/trabalhadores de ILPI) têm indicação de 1 dose anual de Covid-19.';
+            } else {
+                covidBadge = 'Esquema Primário';
+                covidColor = 'slate';
+                covidFreq = '1 dose se nunca vacinado';
+                covidDetails = 'Para a população geral de 5 a 59 anos sem comorbidades e fora de grupos prioritários, o MS indica 1 dose caso a pessoa não possua vacinação prévia.';
+            }
+
+            vaccineCards.push({
+                title: 'Vacina Covid-19 (Calendário PNI Atualizado)',
+                badgeText: covidBadge,
+                badgeColor: covidColor,
+                exam: 'Vacina Monovalente atualizada disponível no PNI',
+                frequency: covidFreq,
+                details: covidDetails
+            });
+
+            // 13.8 VÍRUS SINCICIAL RESPIRATÓRIO (VSR) NA GESTANTE
+            if (isPregnant) {
+                const inVsrWindow = (igWeeks >= 32 && igWeeks <= 36);
+                vaccineCards.push({
+                    title: 'Vacina Vírus Sincicial Respiratório (VSR - Gestante)',
+                    badgeText: inVsrWindow ? 'Aplicar Agora (32 a 36 sem)' : `Programar para 32 a 36 semanas (IG atual: ${igWeeks} sem)`,
+                    badgeColor: inVsrWindow ? 'emerald' : 'amber',
+                    exam: 'Dose única intramuscular entre 32 e 36 semanas de IG',
+                    frequency: '1 dose por gestação',
+                    details: 'Prevenção de bronquiolite e doença do trato respiratório inferior grave por VSR no lactente nos primeiros 6 meses de vida.',
+                    alertNote: 'ATENÇÃO À FAIXA DE IDADE GESTACIONAL (CONITEC / MS): Embora a bula registre de 24 a 36 semanas e a SBIm cite a partir de 28 semanas, a CONITEC e o Ministério da Saúde padronizaram a aplicação estritamente entre 32 e 36 semanas de gestação para evitar risco potencial de parto prematuro entre 28 e 32 semanas.'
+                });
+            }
+
+            // Render Counters
+            document.getElementById('countMs').textContent = msCards.length;
+            document.getElementById('countUspstf').textContent = uspstfCards.length;
+            document.getElementById('countVac').textContent = vaccineCards.length;
+
+            // Render Divergences
+            const divBox = document.getElementById('divergenceAlertBox');
+            const divList = document.getElementById('divergenceList');
+            if (divergences.length > 0) {
+                divBox.classList.remove('hidden');
+                divList.innerHTML = divergences.map(d => `<li>${d}</li>`).join('');
+            } else {
+                divBox.classList.add('hidden');
+                divList.innerHTML = '';
+            }
+
+            // Render Containers
+            document.getElementById('msCardsContainer').innerHTML = msCards.length > 0
+                ? msCards.map(buildCard).join('')
+                : `<div class="bg-white rounded-xl p-6 text-center text-slate-500 border border-slate-200 text-sm">Nenhum rastreamento populacional específico adicional pelo Ministério da Saúde para esta combinação.</div>`;
+
+            document.getElementById('uspstfCardsContainer').innerHTML = uspstfCards.length > 0
+                ? uspstfCards.map(buildCard).join('')
+                : `<div class="bg-white rounded-xl p-6 text-center text-slate-500 border border-slate-200 text-sm">Nenhum rastreamento Grau A ou B adicional pela USPSTF para esta faixa.</div>`;
+
+            document.getElementById('quaternaryCardsContainer').innerHTML = quaternaryCards.length > 0
+                ? quaternaryCards.map(buildCard).join('')
+                : `<div class="bg-white rounded-xl p-4 text-slate-600 border border-slate-200 text-xs sm:text-sm">Evitar solicitar exames fora das faixas etárias e periodicidades preconizadas (prevenção quaternária contra sobrediagnóstico e sobretratamento).</div>`;
+
+            document.getElementById('vaccineCardsContainer').innerHTML = vaccineCards.map(buildCard).join('');
+
+            // Build Clean Electronic Medical Record Text (NO arrows, NO special symbols)
+            let summaryLines = [];
+            summaryLines.push(`RESUMO DE CONDUTAS PREVENTIVAS E RASTREAMENTO (APS)`);
+            summaryLines.push(`Perfil: ${document.getElementById('patientSummaryTitle').textContent} (${tags.join(', ')})`);
+            summaryLines.push('');
+            summaryLines.push(`1. RASTREAMENTO - MINISTERIO DA SAUDE (SUS):`);
+            msCards.forEach(c => {
+                summaryLines.push(`- ${c.title} [${c.badgeText}]: ${c.exam} | Periodicidade: ${c.frequency}.`);
+            });
+            summaryLines.push('');
+            summaryLines.push(`2. RASTREAMENTO - US PREVENTIVE SERVICES TASK FORCE (USPSTF):`);
+            uspstfCards.forEach(c => {
+                summaryLines.push(`- ${c.title} [${c.badgeText}]: ${c.exam} | Periodicidade: ${c.frequency}.`);
+            });
+            if (quaternaryCards.length > 0) {
+                summaryLines.push('');
+                summaryLines.push(`3. PREVENCAO QUATERNARIA E DECISAO COMPARTILHADA:`);
+                quaternaryCards.forEach(c => {
+                    summaryLines.push(`- ${c.title} [${c.badgeText}]: ${c.exam}.`);
+                });
+            }
+            summaryLines.push('');
+            summaryLines.push(`4. ATUALIZACAO VACINAL (PNI / CRIE):`);
+            vaccineCards.forEach(c => {
+                summaryLines.push(`- ${c.title} [${c.badgeText}]: ${c.exam}.`);
+            });
+
+            lastGeneratedSummaryText = summaryLines.join('\n');
+        }
+
+        function copySummaryToClipboard() {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = lastGeneratedSummaryText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const toast = document.getElementById('toastNotification');
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3500);
+        }
+
+        function resetForm() {
+            document.getElementById('ageInput').value = 52;
+            document.getElementById('ageSlider').value = 52;
+            setSex('F');
+            document.getElementById('pregnancyStatus').value = 'none';
+            document.getElementById('gestationalDetails').classList.add('hidden');
+            document.getElementById('chkPreeclampsiaRisk').checked = false;
+            document.getElementById('bmiCategory').value = 'normal';
+            document.getElementById('smokingStatus').value = 'never';
+            document.getElementById('smokingDetails').classList.add('hidden');
+            document.getElementById('chkPackYears20').checked = false;
+            document.getElementById('chkSexuallyActive').checked = true;
+            document.getElementById('chkStiHighRisk').checked = false;
+
+            const checks = [
+                'chkHas', 'chkPrediabetes', 'chkDiabetes', 'chkHighCvRisk',
+                'chkImmunosuppressed', 'chkLiverKidney', 'chkLungHeartChronic',
+                'chkOsteoporosisRisk', 'chkBrcaHistory', 'chkHealthWorker',
+                'chkNeonatalContact', 'chkBedriddenIlpi', 'chkIndigenous'
+            ];
+            checks.forEach(id => {
+                document.getElementById(id).checked = false;
+            });
+            document.getElementById('healthWorkerSub').classList.add('hidden');
+            document.getElementById('dmRiskFactorsCount').value = '0';
+
+            document.getElementById('vacHepB').value = 'none';
+            document.getElementById('vacDt').value = 'complete_recent';
+            document.getElementById('vacFa').value = 'none';
+            document.getElementById('vacScr').value = 'none';
+
+            updateCalculation();
+        }
+
+        function applyPreset(presetName) {
+            resetForm();
+            if (presetName === 'homem58') {
+                setSex('M');
+                syncAge(58);
+                document.getElementById('bmiCategory').value = 'overweight';
+                document.getElementById('smokingStatus').value = 'current';
+                handleSmokingChange();
+                document.getElementById('chkPackYears20').checked = true;
+                document.getElementById('dmRiskFactorsCount').value = '1';
+                document.getElementById('vacDt').value = 'complete_due';
+            } else if (presetName === 'mulher43') {
+                setSex('F');
+                syncAge(43);
+                document.getElementById('bmiCategory').value = 'normal';
+                document.getElementById('vacHepB').value = 'incomplete';
+                document.getElementById('vacScr').value = '1dose';
+            } else if (presetName === 'gestante28') {
+                setSex('F');
+                syncAge(28);
+                document.getElementById('pregnancyStatus').value = 'pregnant';
+                handlePregnancyChange();
+                document.getElementById('gestationalWeeks').value = 33;
+                document.getElementById('chkPreeclampsiaRisk').checked = true;
+                document.getElementById('vacScr').value = '1dose';
+            } else if (presetName === 'idoso68') {
+                setSex('M');
+                syncAge(68);
+                document.getElementById('bmiCategory').value = 'overweight';
+                document.getElementById('smokingStatus').value = 'former';
+                handleSmokingChange();
+                document.getElementById('chkPackYears20').checked = true;
+                document.getElementById('chkQuitWithin15').checked = true;
+                document.getElementById('chkDiabetes').checked = true;
+                document.getElementById('chkHas').checked = true;
+                document.getElementById('vacFa').value = 'after5';
+            }
+            updateCalculation();
+        }
+
+        window.onload = function() {
+            updateCalculation();
+        };
+    </script>
+</body>
+</html>
